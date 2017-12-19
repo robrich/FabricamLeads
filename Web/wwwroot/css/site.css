@@ -12,3 +12,7 @@
 .input-validation-error {
 	border-left: 6px solid #a94442;
 }
+
+[v-cloak] {
+	display: none;
+}

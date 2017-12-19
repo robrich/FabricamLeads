@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Fabricam.Web.Core.DataAccess;
 using Fabricam.Web.Core.Models;
 using Fabricam.Web.Core.Repositories;
 using Fabricam.Web.Core.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,28 +15,35 @@ namespace Fabricam.Web
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            this.Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             AppSettings settings = new AppSettings();
             this.Configuration.Bind(settings);
             services.AddSingleton(settings);
 
-            services.AddSingleton<IUserRepository, UserRepository>();
-            services.AddSingleton<IAuthenticateService, AuthenticateService>();
+            services.AddDbContext<FabricamDbContext>(options => options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection")));
 
+            services.AddScoped<ILeadRepository, LeadRepository>();
+            services.AddScoped<IRandomLeadRepository, RandomLeadRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+
+            services.AddScoped<IAuthenticateService, AuthenticateService>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<ILoadLeadsService, LoadLeadsService>();
+
+            // Using cookie auth without ASP.NET Identity: https://docs.microsoft.com/en-us/aspnet/core/security/authentication/cookie?tabs=aspnetcore2x
+            // See also: https://github.com/aspnet/Docs/tree/master/aspnetcore/security/authentication/cookie/sample
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie();
 
             services.AddMvc();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
@@ -48,6 +53,7 @@ namespace Fabricam.Web
             }
             else
             {
+                // TODO: add Serilog and pipe errors to corporate logging store
                 app.UseExceptionHandler("/Home/Error");
             }
 

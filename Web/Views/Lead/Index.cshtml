@@ -1,0 +1,58 @@
+﻿@{
+	ViewBag.Title = "Leads";
+}
+
+<h1>@ViewBag.Title</h1>
+
+<div id="app" v-cloak>
+	<div class="row">
+		<div class="col-md-12">
+			<a @@click="loadLeads" class="btn btn-default">Load more leads into database</a>
+			<a @@click="getNextLead" class="btn btn-default">Get next lead from database</a>
+			{{ message }}
+		</div>
+	</div>
+
+	<div v-if="lead">
+		<h2>Next Lead</h2>
+		<div class="row">
+			<div class="col-md-12">
+				<b>LeadId:</b> {{lead.leadId}}
+			</div>
+		</div>
+		<br />
+
+		<div class="row">
+			<div class="col-md-6">
+				<b>Name:</b> {{lead.title}} {{lead.firstName}} {{lead.lastName}}
+			</div>
+			<div class="col-md-6">
+				<b>Demographics:</b><br />
+				<b>Gender:</b> {{lead.gender}}
+			</div>
+		</div>
+		<br />
+
+		<div class="row">
+			<div class="col-md-6">
+				<b>Address:</b><br />{{lead.address}}<br />{{lead.city}}, {{lead.state}} {{lead.postalCode}}<br />{{lead.country}}
+			</div>
+			<div class="col-md-6">
+				<b>Email:</b> {{lead.email}}<br />
+				<b>Phone:</b> {{lead.phone}}<br />
+				<b>Cell:</b> {{lead.cell}}
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="hidden">
+	<a id="loadLeadsUrl" asp-controller="Lead" asp-action="LoadLeads">LoadLeads</a>
+	<a id="getNextLeadUrl" asp-controller="Lead" asp-action="GetNextLead">GetNextLead</a>
+</div>
+
+@section Scripts {
+	<script src="/js/appSettings.js" asp-append-version="true"></script>
+	<script src="/js/leadService.js" asp-append-version="true"></script>
+	<script src="/js/lead.js" asp-append-version="true"></script>
+}
