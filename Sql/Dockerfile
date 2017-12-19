@@ -4,8 +4,8 @@ RUN apt-get -y update && \
     apt-get install -y dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+RUN mkdir -p /app
+WORKDIR /app
 
 COPY . .
 
@@ -13,6 +13,6 @@ COPY . .
 RUN dos2unix *
 
 # Grant permissions for the import-data script to be executable for mac users
-RUN chmod +x /usr/src/app/import-data.sh
+RUN chmod +x /app/import-data.sh
 
 CMD /bin/bash ./entrypoint.sh

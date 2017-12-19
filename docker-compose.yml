@@ -1,0 +1,49 @@
+version: '3'
+
+# Can't `COPY ..\ .` (up a directory) so either build outside the container or put all Dockerfiles in root
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile-Web
+    ports:
+      - "5000:5000"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqldb;Database=Fabricam;User Id=sa;Password=superS3cret;
+      - UserApiUrl=http://userapi:5001
+    depends_on:
+      - userapi
+      - sqldb
+    links:
+      - userapi
+      - sqldb
+
+  userapi:
+    build:
+      context: .
+      dockerfile: Dockerfile-UserApi
+    #ports:
+    # Not for public consumption
+
+  # it'll start, run the tests, and exit
+  webcoretests:
+    build:
+      context: .
+      dockerfile: Dockerfile-WebCoreTests
+
+  # it'll start, run the tests, and exit
+  userapitests:
+    build:
+      context: .
+      dockerfile: Dockerfile-UserApiTests
+
+  sqldb:
+    build:
+      context: Sql
+      dockerfile: Dockerfile
+    ports:
+      - "1433" # only public for debugging
+    environment:
+      - SA_PASSWORD=superS3cret # FRAGILE: secrets in git
+      - ACCEPT_EULA=Y

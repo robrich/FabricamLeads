@@ -1,0 +1,35 @@
+# Can't `COPY ..\ .` (up a directory) so either build outside the container or put all Dockerfiles in root
+
+# FRAGILE: copy in entire solution, restore, (cache it), then throw most of it away
+
+# temporary build image
+FROM microsoft/aspnetcore-build:2.0 as build
+WORKDIR /app
+
+# cache restored packages as separate layer
+COPY Shared/Shared.csproj Shared/Shared.csproj
+COPY UserApi/UserApi.csproj UserApi/UserApi.csproj
+COPY UserApi.Tests/UserApi.Tests.csproj UserApi.Tests/UserApi.Tests.csproj
+COPY Web/Web.csproj Web/Web.csproj
+COPY Web.Core/Web.Core.csproj Web.Core/Web.Core.csproj
+COPY Web.Core.Tests/Web.Core.Tests.csproj Web.Core.Tests/Web.Core.Tests.csproj
+COPY Fabricam.sln Fabricam.sln
+RUN dotnet restore
+
+COPY . .
+
+WORKDIR /app/Web
+
+RUN dotnet build -c Release
+RUN dotnet publish -c Release -o dist
+
+
+# deployed image
+FROM microsoft/aspnetcore:2.0
+
+WORKDIR /app
+COPY --from=build /app/Web/dist .
+
+ENV ASPNETCORE_URLS http://+:5000
+EXPOSE 5000
+CMD ["dotnet", "Fabricam.Web.dll"]
